@@ -1,1 +1,0 @@
-print('Claude de Decker')
