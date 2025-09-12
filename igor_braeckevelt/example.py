@@ -1,5 +1,7 @@
 def example_function():
-    print("This is an example function.")
+    print("My name is Igor Braeckevelt")
+    print("My birthplace is Brasschaat, Belgium")
+    print("I love OBD")
 
 
 def main():
