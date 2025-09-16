@@ -77,9 +77,7 @@ async def get_version():
         logger.error(f"Error reading version file: {e}")
         return {"version": "unknown", "error": str(e)}
 
-
-
-
+  
 # Google Cloud Function entry point
 def ci_cd_training_function(request):
     """
