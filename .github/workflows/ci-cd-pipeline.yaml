@@ -1,19 +1,53 @@
 name: CI/CD Pipeline
 
+env:
+  PYTHON_DIR: ci_cd_training/src
 on:
   pull_request:
     branches: 
-      - '**'
+      - 'master'
   push:
     branches:
-      - '**'
+      - 'training_cicd_tommy'
 
 jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  # Third job: Terraform Plan/Apply - ONLY runs if Python checks pass
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd ci_cd_training/src
+          pip install -r requirements.txt
+
+      - name: Execute Flake8
+        id: flake8
+        run: |
+          echo "::group::Flake8 Linting for Python Source"
+          flake8 ${{ env.PYTHON_DIR }}/ --max-line-length=100 --exclude=__pycache__
+          echo "::endgroup:: # End Flake8 Linting"
+
+      - name: Execute Bandit
+        id: bandit
+        run: |
+          echo "::group::Bandit Security Scan for Python Source"
+          if [ -f "${{ env.PYTHON_DIR }}/.bandit" ]; then
+            bandit -r ${{ env.PYTHON_DIR }}/ -ll --ini ${{ env.PYTHON_DIR }}/.bandit
+          else
+            bandit -r ${{ env.PYTHON_DIR }}/ -ll --skip B104
+          fi
+          echo "::endgroup:: # End Bandit Security Scan"
+
   terraform-deploy:
     name: "Terraform Deploy - ${{ github.base_ref || github.ref_name }}"
-
+    needs: build-test
     permissions:
       contents: read
       pull-requests: write
@@ -27,3 +61,18 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Terraform Plan
+        run: |
+          cd terraform
+          terraform plan -var-file=env/dev.tfvars
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve -var-file=env/dev.tfvars
