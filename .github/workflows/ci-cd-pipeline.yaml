@@ -70,7 +70,7 @@ jobs:
   # Third job: Terraform Plan/Apply - ONLY runs if Python checks pass
   terraform-deploy:
     name: "Terraform Deploy - ${{ github.base_ref || github.ref_name }}"
-
+    needs: python-quality-and-testing
     permissions:
       contents: read
       pull-requests: write
