@@ -1,0 +1,29 @@
+# Checkov configuration file
+# Documentation: https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html
+
+# Framework to scan
+framework:
+  - terraform
+
+# Compact output
+compact: true
+
+# Skip checks for development environment
+skip-check:
+  # Example skips for common development patterns:
+  # - CKV_GCP_13  # Ensure GCP compute firewall ingress does not allow unrestricted access
+  # - CKV_GCP_28  # Ensure Cloud SQL database does not have public IP
+  # Add more as needed based on your security requirements
+
+# Soft fail on specific checks (report but don't fail the build)
+soft-fail-on:
+  # - CKV_GCP_*  # Example: soft fail on all GCP checks
+
+# External checks directory (if you have custom policies)
+# external-checks-dir: ./policies
+
+# Output format
+output: cli
+
+# Download external modules (for module scanning)
+download-external-modules: true

@@ -1,0 +1,5 @@
+[bandit]
+# Skip issues that are not relevant for this training environment
+skips: 
+  # B104: Binding to 0.0.0.0 is acceptable in containerized environments
+  - B104

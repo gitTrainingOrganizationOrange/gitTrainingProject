@@ -1,0 +1,21 @@
+# tfsec configuration file
+# Documentation: https://aquasecurity.github.io/tfsec/latest/guides/configuration/
+
+# Minimum severity level to report
+minimum_severity: WARNING
+
+# Exclude specific checks
+exclude:
+  # Example exclusions for common GCP development patterns
+  # Uncomment as needed:
+  # - google-compute-no-public-ip  # Public IPs may be needed in dev
+  # - google-iam-no-project-level-service-account-impersonation  # May be needed for CI/CD
+
+# Include only specific checks
+# include:
+#   - google-*
+
+# Custom severity overrides
+severity_overrides:
+  # Example: Downgrade a specific check from HIGH to MEDIUM
+  # google-compute-disk-encryption-customer-key: MEDIUM
