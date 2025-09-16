@@ -26,6 +26,8 @@ jobs:
         run: |
           cd ci_cd_training/src
           pip install -r requirements.txt
+          pip install flake8
+          pip install bandit
 
       - name: Execute Flake8
         id: flake8
