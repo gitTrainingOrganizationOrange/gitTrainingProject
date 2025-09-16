@@ -44,10 +44,18 @@ jobs:
     #     echo "All tests passed!"
 
     - name: Install dependencies
+      # run: |
+      #   python -m pip install --upgrade pip
+      #   # Install project dependencies
+      #   pip install -r ci_cd_training/src/requirements.txt
+
       run: |
-        python -m pip install --upgrade pip
-        # Install project dependencies
-        pip install -r ci_cd_training/src/requirements.txt
+        echo "Installing flake8..."
+        pip install flake8
+
+      run: |
+        echo "Installing bandit..."
+        pip install bandit
 
     - name: Lint with flake8
       run: |
