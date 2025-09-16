@@ -84,6 +84,6 @@ if __name__ == "__main__":
     # Get host and port from environment variables with secure defaults
     host = os.getenv("API_HOST", "127.0.0.1")  # Default to localhost for security
     port = int(os.getenv("API_PORT", "8000"))
-    
+
     logger.info(f"Starting server on {host}:{port}")
     uvicorn.run(app, host=host, port=port)
