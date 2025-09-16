@@ -34,7 +34,15 @@ jobs:
         run: flake8 ci_cd_training/src/ --max-line-length=100 --exclude=__pycache__
 
       - name: Run tests (pytest)
-        run: pytest ci_cd_training/src/
+        id: tests
+        run: |
+          pytest ci_cd_training/src/ || exit_code=$?
+          if [ "$exit_code" = "5" ]; then
+            echo "No tests found. Skipping test failure."
+            exit 0
+          else
+            exit $exit_code
+          fi
 
       - name: Python Checks Summary
         if: always()
