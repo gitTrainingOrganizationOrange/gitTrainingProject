@@ -8,7 +8,7 @@ on:
       - 'master'
   push:
     branches:
-      - 'training_cicd_tommy'
+      - 'ft/training_cicd_tommy'
 
 jobs:
   build-test:
