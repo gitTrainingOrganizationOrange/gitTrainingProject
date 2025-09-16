@@ -78,6 +78,53 @@ async def get_version():
         return {"version": "unknown", "error": str(e)}
 
 
+# Google Cloud Function entry point
+def ci_cd_training_function(request):
+    """
+    Google Cloud Function entry point.
+    This function serves as the entry point for the Cloud Function deployment.
+    """
+    import json
+
+    try:
+        # Get the request path and method
+        path = getattr(request, "path", "/")
+        method = getattr(request, "method", "GET")
+
+        logger.info(f"Cloud Function called with path: {path}, method: {method}")
+
+        # Handle different endpoints
+        if path == "/" or path == "":
+            response_data = {"message": "Welcome to CI/CD Training API"}
+        elif path == "/health":
+            response_data = {"status": "healthy", "service": "ci-cd-training-api"}
+        elif path == "/hello":
+            response_data = {"message": "Hello, World!"}
+        elif path == "/version":
+            try:
+                version_file = os.path.join(os.path.dirname(__file__), "version.txt")
+                with open(version_file, "r") as f:
+                    version = f.read().strip()
+                response_data = {"version": version}
+            except Exception as e:
+                logger.error(f"Error reading version file: {e}")
+                response_data = {"version": "unknown", "error": str(e)}
+        else:
+            response_data = {
+                "message": "Welcome to CI/CD Training API",
+                "available_endpoints": ["/", "/health", "/hello", "/version"],
+                "current_path": path,
+            }
+
+        # Return JSON response for Cloud Functions
+        return json.dumps(response_data), 200, {"Content-Type": "application/json"}
+
+    except Exception as e:
+        logger.error(f"Error handling Cloud Function request: {e}")
+        error_response = {"error": "Internal server error", "message": str(e)}
+        return json.dumps(error_response), 500, {"Content-Type": "application/json"}
+
+
 if __name__ == "__main__":
     import uvicorn
 
