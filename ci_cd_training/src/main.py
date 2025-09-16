@@ -37,7 +37,7 @@ app.add_middleware(
 allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=allowed_hosts,  # Configurable via ALLOWED_HOSTS env var
+    allowed_hosts=allowed_hosts,  ### Configurable via ALLOWED_HOSTS env var
 )
 
 
