@@ -33,7 +33,11 @@ jobs:
         id: flake8
         run: |
           echo "::group::Flake8 Linting for Python Source"
-          flake8 ${{ env.PYTHON_DIR }}/ --max-line-length=100 --exclude=__pycache__
+          flake8 ${{ env.PYTHON_DIR }}/ --max-line-length=100 --exclude=__pycache__ > flake8.log 2>&1 || {
+            echo "Flake8 failed. Output:";
+            cat flake8.log;
+            exit 1;
+          }
           echo "::endgroup:: # End Flake8 Linting"
 
       - name: Execute Bandit
@@ -41,9 +45,15 @@ jobs:
         run: |
           echo "::group::Bandit Security Scan for Python Source"
           if [ -f "${{ env.PYTHON_DIR }}/.bandit" ]; then
-            bandit -r ${{ env.PYTHON_DIR }}/ -ll --ini ${{ env.PYTHON_DIR }}/.bandit
+            bandit -r ${{ env.PYTHON_DIR }}/ -ll --ini ${{ env.PYTHON_DIR }}/.bandit > bandit.log 2>&1
           else
-            bandit -r ${{ env.PYTHON_DIR }}/ -ll --skip B104
+            bandit -r ${{ env.PYTHON_DIR }}/ -ll --skip B104 > bandit.log 2>&1
+          fi
+          BANDIT_EXIT_CODE=$?
+          if [ $BANDIT_EXIT_CODE -ne 0 ]; then
+            echo "Bandit failed. Output:";
+            cat bandit.log;
+            exit $BANDIT_EXIT_CODE;
           fi
           echo "::endgroup:: # End Bandit Security Scan"
 
