@@ -78,6 +78,13 @@ async def get_version():
         return {"version": "unknown", "error": str(e)}
 
 
+# For Google Cloud Functions: expose a handler matching the entry_point in Terraform
+def ci_cd_training_function(request):
+    from functions_framework import create_app
+
+    return create_app(app)(request)
+
+
 # Google Cloud Function entry point
 def ci_cd_training_function(request):
     """
