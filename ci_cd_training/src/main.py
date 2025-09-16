@@ -16,7 +16,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app #
+# Create FastAPI app
 app = FastAPI(
     title="CI/CD Training API",
     description="A simple FastAPI application for CI/CD training",
