@@ -1,15 +1,98 @@
-name: CI/CD Pipeline
+name: David - CI/CD Pipeline
 
 on:
-  pull_request:
-    branches: 
-      - '**'
   push:
-    branches:
-      - '**'
+    branches: [ master, ft/training_cicd_david ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
 
+  # First job: Python checks
+  python-check:
+
+    name: "Python Code Quality and Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ci_cd_training/src/requirements.txt
+          pip install flake8 pytest
+
+      - name: Lint with flake8
+        run: flake8 ci_cd_training/src/ --max-line-length=100 --exclude=__pycache__
+
+      - name: Run tests (pytest)
+        run: pytest ci_cd_training/src/
+
+      - name: Python Checks Summary
+        if: always()
+        run: |
+          echo "# Python Checks Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint (flake8) | ${{ steps.lint.outcome || 'unknown' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests (pytest) | ${{ steps.tests.outcome || 'unknown' }} |" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.lint.outcome }}" == "success" && "${{ steps.tests.outcome }}" == "success" ]]; then
+            echo "\n✅ All Python checks passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "\n❌ One or more Python checks failed!" >> $GITHUB_STEP_SUMMARY
+          fi
+  
+  # Second job: Terraform checks - now depends on Python checks
+  terraform-check:
+
+    name: "Terraform Code Quality and Tests"
+    runs-on: ubuntu-latest
+    needs: python-check
+    if: needs.python-check.result == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.6
+
+      - name: Initialize Terraform
+        run: terraform -chdir=ci_cd_training/infra init
+
+      - name: Validate Terraform configuration
+        run: terraform -chdir=ci_cd_training/infra validate
+
+      - name: Format Terraform code
+        run: terraform -chdir=ci_cd_training/infra fmt -check
+        
+      - name: Terraform Checks Summary
+        if: always()
+        run: |
+          echo "# Terraform Checks Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Init | ${{ steps.initialize_terraform.outcome || 'unknown' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validate | ${{ steps.validate_terraform_configuration.outcome || 'unknown' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | ${{ steps.format_terraform_code.outcome || 'unknown' }} |" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.initialize_terraform.outcome }}" == "success" && "${{ steps.validate_terraform_configuration.outcome }}" == "success" && "${{ steps.format_terraform_code.outcome }}" == "success" ]]; then
+            echo "\n✅ All Terraform checks passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "\n❌ One or more Terraform checks failed!" >> $GITHUB_STEP_SUMMARY
+          fi
+  
   # Third job: Terraform Plan/Apply - ONLY runs if Python checks pass
   terraform-deploy:
     name: "Terraform Deploy - ${{ github.base_ref || github.ref_name }}"
@@ -27,3 +110,22 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform -chdir=ci_cd_training/infra plan -out=tfplan
+
+      - name: Manual Approval
+        id: manual_approval
+        uses: peter-evans/manual-approval@v3
+        with:
+          # Optionally customize the approval message
+          message: 'Approve to apply Terraform changes to production.'
+
+      - name: Terraform Apply
+        if: steps.manual_approval.outputs.approved == 'true'
+        run: |
+          terraform -chdir=ci_cd_training/infra apply -auto-approve tfplan
+
+
