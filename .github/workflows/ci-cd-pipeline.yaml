@@ -74,7 +74,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.7.6
+          terraform_version: 1.8.0
 
       - name: Initialize Terraform
         run: terraform -chdir=ci_cd_training/infra init
