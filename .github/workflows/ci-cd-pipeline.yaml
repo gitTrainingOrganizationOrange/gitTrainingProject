@@ -46,7 +46,7 @@ jobs:
         id: flake8
         run: |
           echo "::group::Flake8 Linting for Python Source"
-          flake8 ${{ env.PYTHON_DIR }}/
+          flake8 ${{ env.PYTHON_DIR }}/ --max-line-length=100
           echo "::endgroup:: # End Flake8 Linting"
 
       - name: Bandit SAST assessment
