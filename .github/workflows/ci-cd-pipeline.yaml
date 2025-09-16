@@ -69,6 +69,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.0
+
       - name: Auth in GCP
         uses: google-github-actions/auth@v1
         with:
