@@ -8,7 +8,27 @@ on:
     branches:
       - '**'
 
+env:
+  TERRAFORM_DIR: ci_cd_training/terraform
+  PYTHON_DIR: ci_cd_training/src
+
 jobs:
+
+  python-check:
+    name: "Python Code check"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+  terraform-check:
+    name: "terraform code check"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
   # Third job: Terraform Plan/Apply - ONLY runs if Python checks pass
   terraform-deploy:
@@ -27,3 +47,5 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+
