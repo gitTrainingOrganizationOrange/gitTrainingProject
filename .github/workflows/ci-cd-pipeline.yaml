@@ -77,13 +77,13 @@ jobs:
           terraform_version: 1.8.0
 
       - name: Initialize Terraform
-        run: terraform -chdir=ci_cd_training/infra init
+        run: terraform -chdir=ci_cd_training/terraform init
 
       - name: Validate Terraform configuration
-        run: terraform -chdir=ci_cd_training/infra validate
+        run: terraform -chdir=ci_cd_training/terraform validate
 
       - name: Format Terraform code
-        run: terraform -chdir=ci_cd_training/infra fmt -check
+        run: terraform -chdir=ci_cd_training/terraform fmt -check
         
       - name: Terraform Checks Summary
         if: always()
@@ -124,7 +124,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          terraform -chdir=ci_cd_training/infra plan -out=tfplan
+          terraform -chdir=ci_cd_training/terraform plan -out=tfplan
 
       - name: Manual Approval
         id: manual_approval
@@ -136,6 +136,6 @@ jobs:
       - name: Terraform Apply
         if: steps.manual_approval.outputs.approved == 'true'
         run: |
-          terraform -chdir=ci_cd_training/infra apply -auto-approve tfplan
+          terraform -chdir=ci_cd_training/terraform apply -auto-approve tfplan
 
 
